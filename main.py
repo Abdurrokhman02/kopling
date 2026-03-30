@@ -1,10 +1,13 @@
 import time
 import RPi.GPIO as GPIO
-from camera import Camera
-from detector import WasteDetector
-from processor import WasteProcessor
-from rfid_reader import RFIDReader
-from display import LCDDisplay
+from kopling.core.camera import Camera
+from kopling.core.detector import WasteDetector
+from kopling.core.processor import WasteProcessor
+from kopling.core.rfid_reader import RFIDReader
+from kopling.core.display import LCDDisplay
+
+# 1. TAMBAHKAN IMPORT INI
+from kopling.core.servo_motor import ServoMotor 
 
 def main():
     # --- INISIALISASI ---
@@ -17,23 +20,27 @@ def main():
     rfid = RFIDReader(DAFTAR_USER)
     lcd = LCDDisplay(i2c_address=0x27)
     
+    # 2. INISIALISASI SERVO (Misal terpasang di pin BCM 18)
+    servo = ServoMotor(pin=18) 
+    
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
     try:
         # --- INFINITE LOOP IOT ---
         while True:
-            # 1. Status Standby
             lcd.show_message("Sistem Kopling", "Tempelkan Kartu")
             
-            # 2. Menunggu RFID Ditempel
-            # Program akan tertahan di baris ini sampai ada kartu
             uid = rfid.read_card() 
             print(f"\n[INFO] ID Kartu Terbaca: {uid}")
             
-            # 3. Proses Verifikasi
             if rfid.is_verified(uid):
                 print("[STATUS] Terverifikasi")
-                lcd.show_message("Terverifikasi!", "Silakan Buang")
+                lcd.show_message("Terverifikasi!", "System Bekerja")
+                
+                # Jeda waktu memberi kesempatan user memasukkan sampah ke box atas
+                time.sleep(5) 
+                
+                lcd.show_message("Memproses AI...", "Mohon Tunggu")
                 
                 # --- TEMPAT PROSES AI & KAMERA ---
                 # frame = cam.capture()
@@ -42,31 +49,30 @@ def main():
                 # print(result)
                 # -------------------------------
                 
-                # Jeda waktu saat user membuang sampah
-                time.sleep(5) 
+                # 3. SETELAH AI SELESAI, JATUHKAN SAMPAH KE BAWAH
+                lcd.show_message("Menjatuhkan", "Sampah...")
+                servo.drop_waste(open_angle=90, close_angle=0, delay=3)
+                
+                lcd.show_message("Selesai!", "Terima Kasih")
+                time.sleep(2)
                 
             else:
                 print("[STATUS] Akses Ditolak - Tidak Terdaftar")
                 lcd.show_message("Akses Ditolak", "Tdk Terverifikasi")
-                
-                # Jeda sebentar agar pesan terbaca sebelum kembali standby
                 time.sleep(3)
-                
-            # Setelah jeda, loop akan kembali ke atas (Status Standby)
 
     except KeyboardInterrupt:
-        # Menangkap sinyal Ctrl+C dari user
         print("\n[INFO] Mematikan sistem Kopling...")
         lcd.show_message("Sistem Dimatikan")
         time.sleep(2)
         
     except Exception as e:
-        # Menangkap error lain yang tidak terduga
         print(f"\n[ERROR] Terjadi kesalahan fatal: {e}")
         lcd.show_message("Sistem Error!", "Cek Log")
         
     finally:
-        # Reset pin GPIO dan matikan LCD secara aman
+        # 4. PASTIKAN SERVO DI-CLEANUP
+        servo.cleanup()
         GPIO.cleanup()
         lcd.clear()
         print("[INFO] GPIO Cleaned up. Selesai.")
