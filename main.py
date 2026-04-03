@@ -1,28 +1,32 @@
 import time
 import RPi.GPIO as GPIO
+
+# Import modul Kopling
 from modules.camera import Camera
 from modules.detector import WasteDetector
 from modules.processor import WasteProcessor
 from modules.rfid_reader import RFIDReader
 from modules.display import LCDDisplay
 from modules.servo_motor import ServoMotor
-# 1. IMPORT STEPPER
 from modules.stepper_motor import StepperMotor
 
+# Import file konfigurasi yang baru dibuat
+import config
+
 def main():
-    # --- INISIALISASI ---
+    # --- INISIALISASI HARDWARE MENGGUNAKAN CONFIG ---
+    rfid = RFIDReader(config.DAFTAR_USER)
+    lcd = LCDDisplay(i2c_address=config.LCD_I2C_ADDRESS)
+    servo = ServoMotor(pin=config.PIN_SERVO)
+    stepper = StepperMotor(
+        dir_pin=config.PIN_STEPPER_DIR, 
+        step_pin=config.PIN_STEPPER_STEP, 
+        enable_pin=config.PIN_STEPPER_ENABLE
+    )
+    
     # cam = Camera()
     # detector = WasteDetector()
     # processor = WasteProcessor()
-    
-    DAFTAR_USER = [123456789012, 987654321098] 
-    
-    rfid = RFIDReader(DAFTAR_USER)
-    lcd = LCDDisplay(i2c_address=0x27)
-    servo = ServoMotor(pin=18)
-    
-    # 2. INISIALISASI STEPPER (Sesuai pin S=21 dan D=20 yang kita bahas)
-    stepper = StepperMotor(dir_pin=20, step_pin=21)
     
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
@@ -50,42 +54,43 @@ def main():
                 kategori = result.get("dominant_category")
                 print(f"[INFO] Hasil Deteksi: {kategori}")
                 
-                # 3. LOGIKA MEMUTAR TONG SAMPAH BAWAH BERDASARKAN KATEGORI
+                # --- LOGIKA STEPPER ---
                 langkah_kembali = 0
                 arah_kembali = False # Berlawanan jarum jam
                 
                 if kategori == "organik":
                     lcd.show_message("Kategori:", "Organik")
-                    # Misal posisi default sudah organik, jadi stepper tidak perlu mutar
-                    langkah_kembali = 0
+                    langkah_kembali = config.STEP_ORGANIK
                     
                 elif kategori == "anorganik":
                     lcd.show_message("Kategori:", "Anorganik")
-                    # Misal anorganik butuh putar 66 langkah (sekitar 120 derajat) searah jarum jam
-                    stepper.move(steps=66, clockwise=True, delay=0.005)
-                    langkah_kembali = 66
+                    stepper.move(steps=config.STEP_ANORGANIK, clockwise=True, delay=config.STEPPER_DELAY)
+                    langkah_kembali = config.STEP_ANORGANIK
                     arah_kembali = False
                     
                 elif kategori == "b3":
                     lcd.show_message("Kategori:", "B3")
-                    # Misal B3 butuh putar 133 langkah (sekitar 240 derajat) searah jarum jam
-                    stepper.move(steps=133, clockwise=True, delay=0.005)
-                    langkah_kembali = 133
+                    stepper.move(steps=config.STEP_B3, clockwise=True, delay=config.STEPPER_DELAY)
+                    langkah_kembali = config.STEP_B3
                     arah_kembali = False
                 
                 else:
                     lcd.show_message("Kategori:", "Tidak Dikenali")
                 
-                time.sleep(1) # Jeda sebentar biar wadah di bawah stabil
+                time.sleep(1) 
                 
-                # 4. JATUHKAN SAMPAH DARI BOX ATAS
+                # --- LOGIKA SERVO ---
                 lcd.show_message("Menjatuhkan", "Sampah...")
-                servo.drop_waste(open_angle=90, close_angle=0, delay=3)
+                servo.drop_waste(
+                    open_angle=config.SERVO_OPEN_ANGLE, 
+                    close_angle=config.SERVO_CLOSE_ANGLE, 
+                    delay=config.SERVO_DROP_DELAY
+                )
                 
-                # 5. KEMBALIKAN POSISI TONG SAMPAH KE DEFAULT (Posisi Organik)
+                # --- KEMBALIKAN POSISI TONG ---
                 if langkah_kembali > 0:
                     print("[INFO] Mengembalikan posisi tong bawah ke default...")
-                    stepper.move(steps=langkah_kembali, clockwise=arah_kembali, delay=0.005)
+                    stepper.move(steps=langkah_kembali, clockwise=arah_kembali, delay=config.STEPPER_DELAY)
                 
                 lcd.show_message("Selesai!", "Terima Kasih")
                 time.sleep(2)
@@ -105,7 +110,6 @@ def main():
         lcd.show_message("Sistem Error!", "Cek Log")
         
     finally:
-        # 6. PASTIKAN SEMUA HARDWARE DI-CLEANUP
         servo.cleanup()
         stepper.cleanup()
         GPIO.cleanup()
