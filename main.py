@@ -6,9 +6,8 @@ from modules.processor import WasteProcessor
 from modules.rfid_reader import RFIDReader
 from modules.display import LCDDisplay
 from modules.servo_motor import ServoMotor
-
-# 1. TAMBAHKAN IMPORT INI
-from kopling.modules.servo_motor import ServoMotor 
+# 1. IMPORT STEPPER
+from modules.stepper_motor import StepperMotor
 
 def main():
     # --- INISIALISASI ---
@@ -20,25 +19,22 @@ def main():
     
     rfid = RFIDReader(DAFTAR_USER)
     lcd = LCDDisplay(i2c_address=0x27)
+    servo = ServoMotor(pin=18)
     
-    # 2. INISIALISASI SERVO (Misal terpasang di pin BCM 18)
-    servo = ServoMotor(pin=18) 
+    # 2. INISIALISASI STEPPER (Sesuai pin S=21 dan D=20 yang kita bahas)
+    stepper = StepperMotor(dir_pin=20, step_pin=21)
     
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
     try:
-        # --- INFINITE LOOP IOT ---
         while True:
             lcd.show_message("Sistem Kopling", "Tempelkan Kartu")
-            
             uid = rfid.read_card() 
             print(f"\n[INFO] ID Kartu Terbaca: {uid}")
             
             if rfid.is_verified(uid):
                 print("[STATUS] Terverifikasi")
-                lcd.show_message("Terverifikasi!", "System Bekerja")
-                
-                # Jeda waktu memberi kesempatan user memasukkan sampah ke box atas
+                lcd.show_message("Terverifikasi!", "Silakan Buang")
                 time.sleep(5) 
                 
                 lcd.show_message("Memproses AI...", "Mohon Tunggu")
@@ -47,12 +43,49 @@ def main():
                 # frame = cam.capture()
                 # detections = detector.detect(frame)
                 # result = processor.process(detections)
-                # print(result)
-                # -------------------------------
                 
-                # 3. SETELAH AI SELESAI, JATUHKAN SAMPAH KE BAWAH
+                # SIMULASI HASIL AI (Hapus 2 baris ini nanti kalau AI dinyalakan)
+                result = {"dominant_category": "anorganik"} 
+                
+                kategori = result.get("dominant_category")
+                print(f"[INFO] Hasil Deteksi: {kategori}")
+                
+                # 3. LOGIKA MEMUTAR TONG SAMPAH BAWAH BERDASARKAN KATEGORI
+                langkah_kembali = 0
+                arah_kembali = False # Berlawanan jarum jam
+                
+                if kategori == "organik":
+                    lcd.show_message("Kategori:", "Organik")
+                    # Misal posisi default sudah organik, jadi stepper tidak perlu mutar
+                    langkah_kembali = 0
+                    
+                elif kategori == "anorganik":
+                    lcd.show_message("Kategori:", "Anorganik")
+                    # Misal anorganik butuh putar 66 langkah (sekitar 120 derajat) searah jarum jam
+                    stepper.move(steps=66, clockwise=True, delay=0.005)
+                    langkah_kembali = 66
+                    arah_kembali = False
+                    
+                elif kategori == "b3":
+                    lcd.show_message("Kategori:", "B3")
+                    # Misal B3 butuh putar 133 langkah (sekitar 240 derajat) searah jarum jam
+                    stepper.move(steps=133, clockwise=True, delay=0.005)
+                    langkah_kembali = 133
+                    arah_kembali = False
+                
+                else:
+                    lcd.show_message("Kategori:", "Tidak Dikenali")
+                
+                time.sleep(1) # Jeda sebentar biar wadah di bawah stabil
+                
+                # 4. JATUHKAN SAMPAH DARI BOX ATAS
                 lcd.show_message("Menjatuhkan", "Sampah...")
                 servo.drop_waste(open_angle=90, close_angle=0, delay=3)
+                
+                # 5. KEMBALIKAN POSISI TONG SAMPAH KE DEFAULT (Posisi Organik)
+                if langkah_kembali > 0:
+                    print("[INFO] Mengembalikan posisi tong bawah ke default...")
+                    stepper.move(steps=langkah_kembali, clockwise=arah_kembali, delay=0.005)
                 
                 lcd.show_message("Selesai!", "Terima Kasih")
                 time.sleep(2)
@@ -72,8 +105,9 @@ def main():
         lcd.show_message("Sistem Error!", "Cek Log")
         
     finally:
-        # 4. PASTIKAN SERVO DI-CLEANUP
+        # 6. PASTIKAN SEMUA HARDWARE DI-CLEANUP
         servo.cleanup()
+        stepper.cleanup()
         GPIO.cleanup()
         lcd.clear()
         print("[INFO] GPIO Cleaned up. Selesai.")
