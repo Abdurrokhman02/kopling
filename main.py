@@ -1,10 +1,11 @@
 import time
 import RPi.GPIO as GPIO
-from kopling.modules.camera import Camera
-from kopling.modules.detector import WasteDetector
-from kopling.modules.processor import WasteProcessor
-from kopling.modules.rfid_reader import RFIDReader
-from kopling.modules.display import LCDDisplay
+from modules.camera import Camera
+from modules.detector import WasteDetector
+from modules.processor import WasteProcessor
+from modules.rfid_reader import RFIDReader
+from modules.display import LCDDisplay
+from modules.servo_motor import ServoMotor
 
 # 1. TAMBAHKAN IMPORT INI
 from kopling.modules.servo_motor import ServoMotor 
