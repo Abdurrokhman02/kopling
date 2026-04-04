@@ -25,6 +25,8 @@ def setup_gpio_mode():
         )
 
 def main():
+    setup_gpio_mode()
+
     # --- INISIALISASI HARDWARE MENGGUNAKAN CONFIG ---
     rfid = RFIDReader(config.DAFTAR_USER)
     lcd = LCDDisplay(i2c_address=config.LCD_I2C_ADDRESS)
