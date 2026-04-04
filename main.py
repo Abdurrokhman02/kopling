@@ -13,6 +13,17 @@ from modules.stepper_motor import StepperMotor
 # Import file konfigurasi yang baru dibuat
 import config
 
+def setup_gpio_mode():
+    current_mode = GPIO.getmode()
+
+    if current_mode is None:
+        GPIO.setmode(GPIO.BCM)
+    elif current_mode != GPIO.BCM:
+        raise RuntimeError(
+            "Mode GPIO tidak konsisten, proyek ini menggunakan BCM"
+            "kembalikan semua GPIO.setmode() ke GPIO.BCM"
+        )
+
 def main():
     # --- INISIALISASI HARDWARE MENGGUNAKAN CONFIG ---
     rfid = RFIDReader(config.DAFTAR_USER)

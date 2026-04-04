@@ -13,10 +13,6 @@ class StepperMotor:
         self.step_pin = step_pin
         self.enable_pin = enable_pin
         
-        # Menggunakan format penomoran BCM
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        
         # Setup pin sebagai Output
         GPIO.setup(self.dir_pin, GPIO.OUT)
         GPIO.setup(self.step_pin, GPIO.OUT)

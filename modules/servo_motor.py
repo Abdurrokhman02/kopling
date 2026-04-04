@@ -9,11 +9,6 @@ class ServoMotor:
         """
         self.pin = pin
         
-        # Mengatur mode pin GPIO ke BCM
-        GPIO.setmode(GPIO.BCM)
-        # Menonaktifkan warning jika pin sudah pernah dipakai sebelumnya
-        GPIO.setwarnings(False)
-        
         GPIO.setup(self.pin, GPIO.OUT)
         # Frekuensi 50Hz adalah standar untuk kebanyakan motor servo
         self.pwm = GPIO.PWM(self.pin, 50)
