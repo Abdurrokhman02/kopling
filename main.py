@@ -61,8 +61,16 @@ def main():
                 detections = detector.detect(frame)
                 result = processor.process(detections)
                 
-                kategori = result.get("dominant_category")
-                print(f"[INFO] Hasil Deteksi: {kategori}")
+                waste_category = result.get("wasteCategory")
+                details = result.get("details", [])
+                jumlah = result.get("jumlah", 0)
+                
+                print(f"[INFO] Kategori: {waste_category}")
+                print(f"[INFO] Detail: {details}")
+                print(f"[INFO] Jumlah: {jumlah}")
+                
+                # Update kategori berdasarkan hasil deteksi
+                kategori = waste_category
                 
                 # --- LOGIKA STEPPER ---
                 langkah_kembali = 0
