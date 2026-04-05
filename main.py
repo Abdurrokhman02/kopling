@@ -37,9 +37,9 @@ def main():
         enable_pin=config.PIN_STEPPER_ENABLE
     )
     
-    # cam = Camera()
-    # detector = WasteDetector()
-    # processor = WasteProcessor()
+    cam = Camera()
+    detector = WasteDetector()
+    processor = WasteProcessor()
     
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
@@ -57,12 +57,9 @@ def main():
                 lcd.show_message("Memproses AI...", "Mohon Tunggu")
                 
                 # --- TEMPAT PROSES AI & KAMERA ---
-                # frame = cam.capture()
-                # detections = detector.detect(frame)
-                # result = processor.process(detections)
-                
-                # SIMULASI HASIL AI (Hapus 2 baris ini nanti kalau AI dinyalakan)
-                result = {"dominant_category": "anorganik"} 
+                frame = cam.capture()
+                detections = detector.detect(frame)
+                result = processor.process(detections)
                 
                 kategori = result.get("dominant_category")
                 print(f"[INFO] Hasil Deteksi: {kategori}")

@@ -1,3 +1,4 @@
+import time
 import cv2
 
 class Camera:
