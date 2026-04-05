@@ -55,21 +55,32 @@ def main():
                 time.sleep(5) 
                 
                 lcd.show_message("Memproses AI...", "Mohon Tunggu")
-                
+
                 # --- TEMPAT PROSES AI & KAMERA ---
                 frame = cam.capture()
                 detections = detector.detect(frame)
                 result = processor.process(detections)
-                
+
+                status = result.get("status")
                 waste_category = result.get("wasteCategory")
                 details = result.get("details", [])
                 jumlah = result.get("jumlah", 0)
-                
+
+                print(f"[INFO] Status: {status}")
                 print(f"[INFO] Kategori: {waste_category}")
                 print(f"[INFO] Detail: {details}")
                 print(f"[INFO] Jumlah: {jumlah}")
-                
-                # Update kategori berdasarkan hasil deteksi
+
+                if status == "no_waste":
+                    lcd.show_message("Tidak ada sampah", "Coba lagi")
+                    time.sleep(3)
+                    continue
+
+                if status == "mixed_category":
+                    lcd.show_message("Kategori beda!", "Ulangi dari awal")
+                    time.sleep(4)
+                    continue
+
                 kategori = waste_category
                 
                 # --- LOGIKA STEPPER ---
