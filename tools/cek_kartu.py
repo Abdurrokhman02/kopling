@@ -3,6 +3,9 @@ import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 
 def baca_id():
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.cleanup()
     reader = SimpleMFRC522()
     
     print("=== PROGRAM CEK ID KARTU ===")
