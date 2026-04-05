@@ -1,6 +1,6 @@
 RPi.GPIO
 mfrc522
-spidev //optional
+spidev
 RPLCD
 smbus2
 opencv-python-headless
