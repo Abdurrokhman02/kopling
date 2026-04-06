@@ -37,9 +37,9 @@ def main():
         enable_pin=config.PIN_STEPPER_ENABLE
     )
     
-    # cam = Camera()
-    # detector = WasteDetector()
-    # processor = WasteProcessor()
+    cam = Camera()
+    detector = WasteDetector()
+    processor = WasteProcessor()
     
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
@@ -55,17 +55,33 @@ def main():
                 time.sleep(5) 
                 
                 lcd.show_message("Memproses AI...", "Mohon Tunggu")
-                
+
                 # --- TEMPAT PROSES AI & KAMERA ---
-                # frame = cam.capture()
-                # detections = detector.detect(frame)
-                # result = processor.process(detections)
-                
-                # SIMULASI HASIL AI (Hapus 2 baris ini nanti kalau AI dinyalakan)
-                result = {"dominant_category": "anorganik"} 
-                
-                kategori = result.get("dominant_category")
-                print(f"[INFO] Hasil Deteksi: {kategori}")
+                frame = cam.capture()
+                detections = detector.detect(frame)
+                result = processor.process(detections)
+
+                status = result.get("status")
+                waste_category = result.get("wasteCategory")
+                details = result.get("details", [])
+                jumlah = result.get("jumlah", 0)
+
+                print(f"[INFO] Status: {status}")
+                print(f"[INFO] Kategori: {waste_category}")
+                print(f"[INFO] Detail: {details}")
+                print(f"[INFO] Jumlah: {jumlah}")
+
+                if status == "no_waste":
+                    lcd.show_message("Tidak ada sampah", "Coba lagi")
+                    time.sleep(3)
+                    continue
+
+                if status == "mixed_category":
+                    lcd.show_message("Kategori beda!", "Ulangi dari awal")
+                    time.sleep(4)
+                    continue
+
+                kategori = waste_category
                 
                 # --- LOGIKA STEPPER ---
                 langkah_kembali = 0
