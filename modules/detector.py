@@ -2,7 +2,7 @@ import cv2
 from ultralytics import YOLO
 
 class WasteDetector:
-    def __init__(self, model_path="models/model.tflite", conf=0.1, imgsz=320):
+    def __init__(self, model_path="models/model.tflite", conf=0.1, imgsz=416):
         self.model = YOLO(model_path, task="detect")
         self.conf = conf
         self.imgsz = imgsz
