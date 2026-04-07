@@ -1,47 +1,39 @@
-import RPi.GPIO as GPIO
 import time
+
+from modules.stepper_motor import StepperMotor
 import config
 
-# Setup GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
 
-# Ambil pin dari config.py
-motor_pins = [config.IN1, config.IN2, config.IN3, config.IN4]
+def main():
+    stepper = StepperMotor(
+        dir_pin=config.PIN_STEPPER_DIR,
+        step_pin=config.PIN_STEPPER_STEP,
+        enable_pin=config.PIN_STEPPER_ENABLE,
+    )
 
-# Set pin sebagai output
-for pin in motor_pins:
-    GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, False)
+    try:
+        print("[TEST] Stepper motor test mulai.")
+        print("[TEST] Tekan Ctrl+C untuk berhenti kapan saja.")
 
-# Urutan langkah (Half-step)
-step_sequence = [
-    [1, 0, 0, 0],
-    [1, 1, 0, 0],
-    [0, 1, 0, 0],
-    [0, 1, 1, 0],
-    [0, 0, 1, 0],
-    [0, 0, 1, 1],
-    [0, 0, 0, 1],
-    [1, 0, 0, 1]
-]
+        if config.PIN_STEPPER_ENABLE is not None:
+            stepper.enable()
 
-print("Motor muter terus nih bro. Tekan Ctrl+C buat berhenti.")
+        while True:
+            print("[TEST] Memutar searah jarum jam (200 langkah)")
+            stepper.move(steps=200, clockwise=True, delay=0.005)
+            time.sleep(1)
 
-try:
-    # Loop abadi biar motor muter terus
-    while True:
-        for step in step_sequence:
-            for i in range(len(motor_pins)):
-                GPIO.output(motor_pins[i], step[i])
-            time.sleep(0.001)  # Jeda 1ms, bisa dibesarkan kalau mau lebih lambat
-            
-except KeyboardInterrupt:
-    # Dijalankan saat kamu menekan Ctrl+C
-    print("\nSip, pengetesan selesai. Motor berhenti.")
-    
-finally:
-    # Mematikan arus ke motor biar nggak panas
-    for pin in motor_pins:
-        GPIO.output(pin, False)
-    GPIO.cleanup()
+            print("[TEST] Memutar berlawanan jarum jam (200 langkah)")
+            stepper.move(steps=200, clockwise=False, delay=0.005)
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+        print("\n[TEST] Pengujian dihentikan oleh pengguna.")
+
+    finally:
+        stepper.cleanup()
+        print("[TEST] Cleanup selesai. GPIO telah dinonaktifkan.")
+
+
+if __name__ == "__main__":
+    main()
