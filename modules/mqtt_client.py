@@ -27,6 +27,9 @@ class MQTTClient:
         self.password = os.getenv('MQTT_PASSWORD')
         self.client_id = os.getenv('MQTT_CLIENT_ID', 'kopling-device-001')
         self.topic_base = os.getenv('MQTT_TOPIC_BASE', 'kopling/')
+        self.use_tls = os.getenv('MQTT_USE_TLS', 'true').lower() == 'true'
+        self.ca_cert = os.getenv('MQTT_CA_CERT', None)
+        self.connect_timeout = int(os.getenv('MQTT_CONNECT_TIMEOUT', 10))
 
         # Validate required config
         if not self.broker:
@@ -35,6 +38,19 @@ class MQTTClient:
         # Initialize MQTT client
         self.client = mqtt.Client(client_id=self.client_id)
         self.client.username_pw_set(self.username, self.password)
+
+        # Configure TLS if needed (port 8883)
+        if self.use_tls:
+            try:
+                if self.ca_cert:
+                    self.client.tls_set(ca_certs=self.ca_cert)
+                else:
+                    # Use default system CA certificates
+                    self.client.tls_set()
+                self.client.tls_insecure_set(False)
+                print("[MQTT] TLS enabled")
+            except Exception as e:
+                print(f"[MQTT] TLS configuration warning: {e}")
 
         # Set callbacks
         self.client.on_connect = self.on_connect
@@ -78,11 +94,15 @@ class MQTTClient:
             self.last_response_topic = msg.topic
             self.response_event.set()
 
-    def connect(self, timeout=5):
+    def connect(self, timeout=None):
         if self.connected:
             return True
 
+        if timeout is None:
+            timeout = self.connect_timeout
+
         try:
+            print(f"[MQTT] Connecting to {self.broker}:{self.port} (timeout: {timeout}s)...")
             self.client.connect(self.broker, self.port, keepalive=60)
             self.client.loop_start()
 
@@ -92,8 +112,15 @@ class MQTTClient:
                 waited += 0.1
 
             if not self.connected:
-                print("[MQTT] Connection did not succeed within timeout")
+                print(f"[MQTT] Connection did not succeed within timeout ({timeout}s)")
+                print(f"[MQTT] Check: broker address, credentials, TLS settings, and network connectivity")
             return self.connected
+        except ConnectionRefusedError:
+            print(f"[MQTT] Connection refused by {self.broker}:{self.port}")
+            return False
+        except OSError as e:
+            print(f"[MQTT] Network error: {e}")
+            return False
         except Exception as e:
             print(f"[MQTT] Connection error: {e}")
             return False
