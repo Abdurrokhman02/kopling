@@ -6,3 +6,5 @@ smbus2
 opencv-python-headless
 numpy<2.0
 tflite-runtime
+paho-mqtt
+python-dotenv

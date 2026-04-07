@@ -9,6 +9,7 @@ from modules.rfid_reader import RFIDReader
 from modules.display import LCDDisplay
 from modules.servo_motor import ServoMotor
 from modules.stepper_motor import StepperMotor
+from modules.mqtt_client import MQTTClient
 
 # Import file konfigurasi yang baru dibuat
 import config
@@ -40,11 +41,19 @@ def main():
     cam = Camera()
     detector = WasteDetector()
     processor = WasteProcessor()
+    mqtt = MQTTClient()
+    
+    # Connect to MQTT broker
+    if not mqtt.connect():
+        print("[WARNING] MQTT connection failed, continuing without MQTT")
     
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
     try:
         while True:
+            if not mqtt.connected:
+                mqtt.reconnect()
+
             lcd.show_message("Sistem Kopling", "Tempelkan Kartu")
             uid = rfid.read_card() 
             print(f"\n[INFO] ID Kartu Terbaca: {uid}")
@@ -70,6 +79,9 @@ def main():
                 print(f"[INFO] Kategori: {waste_category}")
                 print(f"[INFO] Detail: {details}")
                 print(f"[INFO] Jumlah: {jumlah}")
+
+                # Send detection result to MQTT
+                mqtt.send_detection_result(uid, result)
 
                 if status == "no_waste":
                     lcd.show_message("Tidak ada sampah", "Coba lagi")
@@ -139,6 +151,7 @@ def main():
         lcd.show_message("Sistem Error!", "Cek Log")
         
     finally:
+        mqtt.disconnect()
         servo.cleanup()
         stepper.cleanup()
         GPIO.cleanup()
