@@ -143,6 +143,7 @@ def main():
             else:
                 print("[STATUS] Akses Ditolak - Tidak Terdaftar")
                 lcd.show_message("Akses Ditolak", "Tdk Terverifikasi")
+                lcd.show_message("Silakan Daftar", f"id: {uid}")
                 time.sleep(3)
 
     except KeyboardInterrupt:
