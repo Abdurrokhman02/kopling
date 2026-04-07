@@ -3,16 +3,13 @@ import RPi.GPIO as GPIO
 import time
 
 class RFIDReader:
-    def __init__(self, registered_ids, mqtt_client=None):
+    def __init__(self, mqtt_client=None):
         self.reader = SimpleMFRC522()
 
         try:
             self.reader = SimpleMFRC522(pin_mode=GPIO.BCM)
         except TypeError:
             self.reader = SimpleMFRC522()
-
-        # Menyimpan list ID kartu yang punya akses (untuk fallback lokal)
-        self.registered_ids = registered_ids
         
         # MQTT client untuk autentikasi
         self.mqtt_client = mqtt_client
@@ -70,5 +67,6 @@ class RFIDReader:
             return self._check_local(card_id)
     
     def _check_local(self, card_id):
-        """Pengecekan lokal untuk fallback"""
-        return card_id in self.registered_ids
+        """Fallback tanpa autentikasi - selalu return False untuk force MQTT auth"""
+        print(f"[RFID] No local fallback - MQTT auth required for card_id: {card_id}")
+        return False

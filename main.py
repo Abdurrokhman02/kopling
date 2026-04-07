@@ -42,7 +42,7 @@ def main():
         mqtt.subscribe("auth/response", qos=1)
     
     # Inisialisasi RFID reader dengan MQTT client untuk autentikasi
-    rfid = RFIDReader(config.DAFTAR_USER, mqtt_client=mqtt)
+    rfid = RFIDReader(mqtt_client=mqtt)
     lcd = LCDDisplay(i2c_address=config.LCD_I2C_ADDRESS)
     servo = ServoMotor(pin=config.PIN_SERVO)
     stepper = StepperMotor(

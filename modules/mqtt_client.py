@@ -86,7 +86,7 @@ class MQTTClient:
         print(f"[MQTT] Received: {msg.topic} -> {payload}")
         
         # Handle response dari auth/response dan topik lainnya
-        if msg.topic.endswith("auth/response"):
+        if "auth/response" in msg.topic:
             try:
                 self.response_data = json.loads(payload)
             except:
@@ -174,6 +174,34 @@ class MQTTClient:
         except Exception as e:
             print(f"[MQTT] Subscribe error: {e}")
             return False
+
+    def send_auth_request(self, card_id):
+        """Kirim permintaan autentikasi ke server."""
+        payload = {
+            "cardId": card_id,
+        }
+        return self.publish("auth/request", payload)
+
+    def wait_for_auth_response(self, timeout=10):
+        """
+        Tunggu respon autentikasi dari server.
+        
+        Args:
+            timeout: Waktu menunggu respon dalam detik
+            
+        Return:
+            Dict respon jika diterima, None jika timeout
+        """
+        self.response_event.clear()
+        
+        # Tunggu event atau timeout
+        if self.response_event.wait(timeout=timeout):
+            result = self.response_data
+            self.response_data = None
+            return result
+        else:
+            print(f"[MQTT] Timeout menunggu auth response ({timeout}s)")
+            return None
 
     def send_detection_result(self, uid, result):
         """Kirim hasil deteksi ke server dengan format payload standar."""

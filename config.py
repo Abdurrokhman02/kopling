@@ -11,12 +11,6 @@ PIN_STEPPER_ENABLE = 20 # Isi dengan angka pin jika ingin diaktifkan, atau None
 # --- PENGATURAN I2C ---
 LCD_I2C_ADDRESS = 0x27
 
-# --- PENGATURAN PENGGUNA (RFID) ---
-DAFTAR_USER = [
-    893884915489, 
-    893655474073
-]
-
 # --- PENGATURAN MEKANIK SERVO (Box Atas) ---
 SERVO_OPEN_ANGLE = 180
 SERVO_CLOSE_ANGLE = 0
