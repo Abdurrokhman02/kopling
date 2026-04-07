@@ -1,7 +1,19 @@
 import os
 import json
+import time
+import threading
 import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
+
+MQTT_CONNACK_REASONS = {
+    0: "Connection accepted",
+    1: "Connection refused: unacceptable protocol version",
+    2: "Connection refused: identifier rejected",
+    3: "Connection refused: server unavailable",
+    4: "Connection refused: bad user name or password",
+    5: "Connection refused: not authorized",
+    7: "Connection lost / unexpected disconnect",
+}
 
 class MQTTClient:
     def __init__(self):
@@ -10,10 +22,10 @@ class MQTTClient:
 
         # MQTT Configuration
         self.broker = os.getenv('MQTT_BROKER')
-        self.port = int(os.getenv('MQTT_PORT', 1883))
+        self.port = int(os.getenv('MQTT_PORT', 8883))
         self.username = os.getenv('MQTT_USERNAME')
         self.password = os.getenv('MQTT_PASSWORD')
-        self.client_id = os.getenv('MQTT_CLIENT_ID', 'kopling-device')
+        self.client_id = os.getenv('MQTT_CLIENT_ID', 'kopling-device-001')
         self.topic_base = os.getenv('MQTT_TOPIC_BASE', 'kopling/')
 
         # Validate required config
@@ -33,6 +45,11 @@ class MQTTClient:
         self.client.reconnect_delay_set(min_delay=1, max_delay=120)
 
         self.connected = False
+        
+        # Response handling untuk autentikasi dan topik lainnya
+        self.response_event = threading.Event()
+        self.response_data = None
+        self.last_response_topic = None
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -40,23 +57,43 @@ class MQTTClient:
             print(f"[MQTT] Connected to {self.broker}:{self.port}")
         else:
             self.connected = False
-            print(f"[MQTT] Connection failed with code {rc}")
+            reason = MQTT_CONNACK_REASONS.get(rc, "Unknown reason")
+            print(f"[MQTT] Connection failed with code {rc}: {reason}")
 
     def on_disconnect(self, client, userdata, rc):
         self.connected = False
-        print(f"[MQTT] Disconnected with code {rc}")
+        reason = MQTT_CONNACK_REASONS.get(rc, "Unknown reason")
+        print(f"[MQTT] Disconnected with code {rc}: {reason}")
 
     def on_message(self, client, userdata, msg):
-        print(f"[MQTT] Received: {msg.topic} -> {msg.payload.decode()}")
+        payload = msg.payload.decode()
+        print(f"[MQTT] Received: {msg.topic} -> {payload}")
+        
+        # Handle response dari auth/response dan topik lainnya
+        if msg.topic.endswith("auth/response"):
+            try:
+                self.response_data = json.loads(payload)
+            except:
+                self.response_data = payload
+            self.last_response_topic = msg.topic
+            self.response_event.set()
 
-    def connect(self):
+    def connect(self, timeout=5):
         if self.connected:
             return True
 
         try:
             self.client.connect(self.broker, self.port, keepalive=60)
             self.client.loop_start()
-            return True
+
+            waited = 0.0
+            while waited < timeout and not self.connected:
+                time.sleep(0.1)
+                waited += 0.1
+
+            if not self.connected:
+                print("[MQTT] Connection did not succeed within timeout")
+            return self.connected
         except Exception as e:
             print(f"[MQTT] Connection error: {e}")
             return False

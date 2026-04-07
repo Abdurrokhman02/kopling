@@ -29,15 +29,6 @@ def main():
     setup_gpio_mode()
 
     # --- INISIALISASI HARDWARE MENGGUNAKAN CONFIG ---
-    rfid = RFIDReader(config.DAFTAR_USER)
-    lcd = LCDDisplay(i2c_address=config.LCD_I2C_ADDRESS)
-    servo = ServoMotor(pin=config.PIN_SERVO)
-    stepper = StepperMotor(
-        dir_pin=config.PIN_STEPPER_DIR, 
-        step_pin=config.PIN_STEPPER_STEP, 
-        enable_pin=config.PIN_STEPPER_ENABLE
-    )
-    
     cam = Camera()
     detector = WasteDetector()
     processor = WasteProcessor()
@@ -46,6 +37,19 @@ def main():
     # Connect to MQTT broker
     if not mqtt.connect():
         print("[WARNING] MQTT connection failed, continuing without MQTT")
+    else:
+        # Subscribe ke topik respon autentikasi
+        mqtt.subscribe("auth/response", qos=1)
+    
+    # Inisialisasi RFID reader dengan MQTT client untuk autentikasi
+    rfid = RFIDReader(config.DAFTAR_USER, mqtt_client=mqtt)
+    lcd = LCDDisplay(i2c_address=config.LCD_I2C_ADDRESS)
+    servo = ServoMotor(pin=config.PIN_SERVO)
+    stepper = StepperMotor(
+        dir_pin=config.PIN_STEPPER_DIR, 
+        step_pin=config.PIN_STEPPER_STEP, 
+        enable_pin=config.PIN_STEPPER_ENABLE
+    )
     
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
     
