@@ -1,13 +1,10 @@
 import time
-import RPi.GPIO as GPIO
 
 from modules.servo_motor import ServoMotor
 import config
 
 
 def main():
-    GPIO.setmode(GPIO.BCM)
-
     servo = ServoMotor(pin=config.PIN_SERVO)
 
     try:
@@ -15,16 +12,12 @@ def main():
         print("[TEST] Tekan Ctrl+C untuk berhenti kapan saja.")
 
         while True:
-            print("[TEST] Rotasi counter-clockwise (membuka)")
-            servo.set_speed(50)  # Kecepatan sedang CCW
-            time.sleep(2)
-            servo.set_speed(0)   # Stop
+            print("[TEST] Rotasi 90 derajat counter-clockwise")
+            servo.rotate_degrees(90, speed=50)
             time.sleep(1)
 
-            print("[TEST] Rotasi clockwise (menutup)")
-            servo.set_speed(-50)  # Kecepatan sedang CW
-            time.sleep(2)
-            servo.set_speed(0)    # Stop
+            print("[TEST] Rotasi 90 derajat clockwise (kembali)")
+            servo.rotate_degrees(-90, speed=50)
             time.sleep(1)
 
     except KeyboardInterrupt:
@@ -32,8 +25,7 @@ def main():
 
     finally:
         servo.cleanup()
-        GPIO.cleanup()
-        print("[TEST] Cleanup selesai. GPIO telah dinonaktifkan.")
+        print("[TEST] Cleanup selesai.")
 
 
 if __name__ == "__main__":

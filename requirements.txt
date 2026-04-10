@@ -1,4 +1,5 @@
 RPi.GPIO
+gpiozero
 mfrc522
 spidev
 RPLCD
