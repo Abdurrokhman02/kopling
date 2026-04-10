@@ -23,7 +23,7 @@ SERVO_DROP_DELAY = 3 # Lama waktu tunggu (detik) saat sampah dijatuhkan
 
 # --- PENGATURAN MOTOR STEPPER (Tong Bawah) ---
 # Nema 17 standar = 200 langkah per 360 derajat
-STEPPER_DELAY = 0.005
-STEP_ORGANIK = 1200     # Titik default
-STEP_ANORGANIK = 1200   # Putaran ~120 derajat
-STEP_B3 =  1200         # Putaran ~240 derajat
+STEPPER_DELAY = 0.0005
+STEP_ORGANIK = 0     # Titik default
+STEP_ANORGANIK = 2200   # Putaran ~120 derajat
+STEP_B3 =  1850         # Putaran ~240 derajat

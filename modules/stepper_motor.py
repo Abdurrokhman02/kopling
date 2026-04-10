@@ -22,7 +22,7 @@ class StepperMotor:
             # LOW pada A4988 berarti motor aktif (Enable)
             GPIO.output(self.enable_pin, GPIO.LOW)
 
-    def move(self, steps, clockwise=True, delay=0.002):
+    def move(self, steps, clockwise=True, delay=0.0005):
         """
         Fungsi untuk memutar motor.
         Nema 17 standar memiliki 200 langkah per 1 putaran penuh (360 derajat).

@@ -178,9 +178,9 @@ class MQTTClient:
     def send_auth_request(self, card_id):
         """Kirim permintaan autentikasi ke server."""
         payload = {
-            "cardId": card_id,
+            "userId": card_id,
         }
-        return self.publish("auth/request", payload)
+        return self.publish("auth", payload)
 
     def wait_for_auth_response(self, timeout=10):
         """
