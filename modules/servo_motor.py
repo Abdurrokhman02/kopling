@@ -4,7 +4,7 @@ import time
 class ServoMotor:
     def __init__(self, pin=18):
         """
-        Inisialisasi motor servo.
+        Inisialisasi motor servo MG996R.
         Default menggunakan pin GPIO 18 (format BCM).
         """
         self.pin = pin
@@ -15,7 +15,7 @@ class ServoMotor:
         self.pwm.start(0)
 
     def set_angle(self, angle):
-        """Menggerakkan servo ke sudut tertentu (0 - 180 derajat)."""
+        """Menggerakkan servo MG996R ke sudut tertentu (0 - 180 derajat)."""
         # Rumus konversi sudut ke duty cycle (biasanya rentang 2% - 12%)
         duty = 2 + (angle / 18)
         

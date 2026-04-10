@@ -17,6 +17,7 @@ PIN_LED_GREEN = 24    # LED Hijau - RFID Terverifikasi
 LCD_I2C_ADDRESS = 0x27
 
 # --- PENGATURAN MEKANIK SERVO (Box Atas) ---
+# Servo tipe MG996R high torque, pengaturan sudut 0-180 derajat.
 SERVO_OPEN_ANGLE = 180
 SERVO_CLOSE_ANGLE = 0
 SERVO_DROP_DELAY = 3 # Lama waktu tunggu (detik) saat sampah dijatuhkan
