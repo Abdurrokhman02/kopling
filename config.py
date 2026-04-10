@@ -18,9 +18,15 @@ LCD_I2C_ADDRESS = 0x27
 
 # --- PENGATURAN MEKANIK SERVO (Box Atas) ---
 # Servo tipe MG996R kontinyu (360 derajat), pengaturan durasi rotasi.
-SERVO_OPEN_DURATION = 3   # Lama rotasi untuk membuka (detik)
-SERVO_CLOSE_DURATION = 3  # Lama rotasi untuk menutup (detik)
-SERVO_DROP_DELAY = 3      # Lama waktu tunggu (detik) saat sampah dijatuhkan
+# SERVO_OPEN_DURATION = 3   # Lama rotasi untuk membuka (detik)
+# SERVO_CLOSE_DURATION = 3  # Lama rotasi untuk menutup (detik)
+# SERVO_DROP_DELAY = 3      # Lama waktu tunggu (detik) saat sampah dijatuhkan
+
+# --- PENGATURAN MEKANIK SERVO 360 (Box Atas) ---
+SERVO_OPEN_SPEED = 50      # Kecepatan buka
+SERVO_CLOSE_SPEED = -50    # Kecepatan tutup (nilai negatif)
+SERVO_MOVE_DURATION = 1.2  # SESUAIKAN: Berapa detik waktu yang dibutuhkan untuk membuka pintu
+SERVO_DROP_DELAY = 3       # Jeda sampah jatuh
 
 # --- PENGATURAN MOTOR STEPPER (Tong Bawah) ---
 # Nema 17 standar = 200 langkah per 360 derajat

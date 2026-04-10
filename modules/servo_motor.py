@@ -3,43 +3,43 @@ import time
 
 class ServoMotor:
     def __init__(self, pin=18):
-        """
-        Inisialisasi motor servo.
-        Default menggunakan pin GPIO 18 (format BCM).
-        """
         self.pin = pin
-        
         GPIO.setup(self.pin, GPIO.OUT)
-        # Frekuensi 50Hz adalah standar untuk kebanyakan motor servo
         self.pwm = GPIO.PWM(self.pin, 50)
         self.pwm.start(0)
 
-    def set_angle(self, angle):
-        """Menggerakkan servo ke sudut tertentu (0 - 180 derajat)."""
-        # Rumus konversi sudut ke duty cycle (biasanya rentang 2% - 12%)
-        duty = 2 + (angle / 18)
+    def set_speed(self, speed, duration):
+        """
+        speed: -100 (full speed balik), 0 (berhenti), 100 (full speed maju)
+        """
+        # Konversi speed ke duty cycle (rentang 5% sampai 10%)
+        # 7.5 adalah titik tengah (berhenti)
+        duty = 7.5 + (speed / 40) 
+        time.sleep(duration)
         
         GPIO.output(self.pin, True)
         self.pwm.ChangeDutyCycle(duty)
-        time.sleep(0.5) # Beri waktu servo untuk bergerak mencapai posisi
-        
-        GPIO.output(self.pin, False)
-        self.pwm.ChangeDutyCycle(0) # Nol-kan duty cycle agar servo tidak bergetar (jitter)
 
-    def drop_waste(self, open_angle=90, close_angle=0, delay=3):
+    def stop(self):
+        self.pwm.ChangeDutyCycle(0)
+        GPIO.output(self.pin, False)
+
+    def drop_waste(self, open_speed=50, close_speed=-50, move_duration=1.0, delay=3):
         """
-        Fungsi utama untuk membuka katup pembuangan sampah 
-        dan menutupnya kembali.
+        Menggunakan durasi waktu untuk membuka dan menutup.
         """
-        print("[INFO] Menggerakkan servo: Membuka pintu box...")
-        self.set_angle(open_angle)
+        print("[INFO] Menggerakkan servo 360: Membuka pintu...")
+        self.set_speed(open_speed, 5)
+        time.sleep(move_duration) # Putar selama X detik untuk membuka
+        self.stop()
         
-        # Jeda waktu menunggu sampah benar-benar jatuh ke bawah
-        time.sleep(delay) 
+        # Jeda waktu menunggu sampah jatuh
+        time.sleep(delay)
         
-        print("[INFO] Menggerakkan servo: Menutup pintu box...")
-        self.set_angle(close_angle)
+        print("[INFO] Menggerakkan servo 360: Menutup pintu...")
+        self.set_speed(close_speed, 5)
+        time.sleep(move_duration) # Putar balik selama X detik untuk menutup
+        self.stop()
 
     def cleanup(self):
-        """Menghentikan PWM saat sistem dimatikan."""
         self.pwm.stop()
