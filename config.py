@@ -17,10 +17,10 @@ PIN_LED_GREEN = 24    # LED Hijau - RFID Terverifikasi
 LCD_I2C_ADDRESS = 0x27
 
 # --- PENGATURAN MEKANIK SERVO (Box Atas) ---
-# Servo tipe MG996R high torque, pengaturan sudut 0-180 derajat.
-SERVO_OPEN_ANGLE = 180
-SERVO_CLOSE_ANGLE = 0
-SERVO_DROP_DELAY = 3 # Lama waktu tunggu (detik) saat sampah dijatuhkan
+# Servo tipe MG996R kontinyu (360 derajat), pengaturan durasi rotasi.
+SERVO_OPEN_DURATION = 3   # Lama rotasi untuk membuka (detik)
+SERVO_CLOSE_DURATION = 3  # Lama rotasi untuk menutup (detik)
+SERVO_DROP_DELAY = 3      # Lama waktu tunggu (detik) saat sampah dijatuhkan
 
 # --- PENGATURAN MOTOR STEPPER (Tong Bawah) ---
 # Nema 17 standar = 200 langkah per 360 derajat
