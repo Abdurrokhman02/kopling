@@ -8,6 +8,11 @@ PIN_STEPPER_DIR = 16
 PIN_STEPPER_STEP = 12
 PIN_STEPPER_ENABLE = 20 # Isi dengan angka pin jika ingin diaktifkan, atau None
 
+# --- PENGATURAN PIN LED ---
+PIN_LED_RED = 22      # LED Merah - Sistem ON
+PIN_LED_YELLOW = 23   # LED Kuning - Proses AI/Memproses
+PIN_LED_GREEN = 24    # LED Hijau - RFID Terverifikasi
+
 # --- PENGATURAN I2C ---
 LCD_I2C_ADDRESS = 0x27
 

@@ -10,6 +10,7 @@ from modules.display import LCDDisplay
 from modules.servo_motor import ServoMotor
 from modules.stepper_motor import StepperMotor
 from modules.mqtt_client import MQTTClient
+from modules.led import LEDController
 
 # Import file konfigurasi yang baru dibuat
 import config
@@ -51,7 +52,17 @@ def main():
         enable_pin=config.PIN_STEPPER_ENABLE
     )
     
+    # Inisialisasi LED Controller
+    led = LEDController(
+        red_pin=config.PIN_LED_RED,
+        yellow_pin=config.PIN_LED_YELLOW,
+        green_pin=config.PIN_LED_GREEN
+    )
+    
     print("Sistem Kopling Siap Beroperasi (Tekan Ctrl+C untuk berhenti)")
+    
+    # Nyalakan LED Merah untuk indikasi sistem ON
+    led.red_on()
     
     try:
         while True:
@@ -63,11 +74,16 @@ def main():
             print(f"\n[INFO] ID Kartu Terbaca: {uid}")
             
             if rfid.is_verified(uid):
+                # Nyalakan LED Hijau untuk indikasi RFID terverifikasi
+                led.green_on()
                 print("[STATUS] Terverifikasi")
                 lcd.show_message("Terverifikasi!", "Silakan Buang")
                 time.sleep(5) 
                 
                 lcd.show_message("Memproses AI...", "Mohon Tunggu")
+                
+                # Nyalakan LED Kuning untuk indikasi proses dimulai
+                led.yellow_on()
 
                 # --- TEMPAT PROSES AI & KAMERA ---
                 frame = cam.capture()
@@ -137,6 +153,10 @@ def main():
                     print("[INFO] Mengembalikan posisi tong bawah ke default...")
                     stepper.move(steps=langkah_kembali, clockwise=arah_kembali, delay=config.STEPPER_DELAY)
                 
+                # Matikan LED Kuning dan Hijau setelah proses selesai
+                led.yellow_off()
+                led.green_off()
+                
                 lcd.show_message("Selesai!", "Terima Kasih")
                 time.sleep(2)
                 
@@ -156,6 +176,8 @@ def main():
         lcd.show_message("Sistem Error!", "Cek Log")
         
     finally:
+        # Cleanup LED
+        led.cleanup()
         mqtt.disconnect()
         servo.cleanup()
         stepper.cleanup()
