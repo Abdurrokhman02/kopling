@@ -143,9 +143,9 @@ def main():
                 # --- LOGIKA SERVO ---
                 lcd.show_message("Menjatuhkan", "Sampah...")
                 servo.drop_waste(
-                    open_angle=config.SERVO_OPEN_ANGLE, 
-                    close_angle=config.SERVO_CLOSE_ANGLE, 
-                    delay=config.SERVO_DROP_DELAY
+                    open_speed=config.SERVO_OPEN_SPEED, 
+                    close_speed=config.SERVO_CLOSE_SPEED, 
+                    move_duration=config.SERVO_MOVE_DURATION
                 )
                 
                 # --- KEMBALIKAN POSISI TONG ---

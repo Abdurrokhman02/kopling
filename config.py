@@ -26,7 +26,7 @@ LCD_I2C_ADDRESS = 0x27
 SERVO_OPEN_SPEED = 50      # Kecepatan buka
 SERVO_CLOSE_SPEED = -50    # Kecepatan tutup (nilai negatif)
 SERVO_MOVE_DURATION = 1.2  # SESUAIKAN: Berapa detik waktu yang dibutuhkan untuk membuka pintu
-SERVO_DROP_DELAY = 3       # Jeda sampah jatuh
+SERVO_DROP_DELAY = 4       # Jeda sampah jatuh
 
 # --- PENGATURAN MOTOR STEPPER (Tong Bawah) ---
 # Nema 17 standar = 200 langkah per 360 derajat

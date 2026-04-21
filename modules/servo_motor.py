@@ -37,7 +37,7 @@ class ServoMotor:
         time.sleep(delay)
         
         print("[INFO] Menggerakkan servo 360: Menutup pintu...")
-        self.set_speed(close_speed, 5)
+        self.set_speed(close_speed, 8)
         time.sleep(move_duration) # Putar balik selama X detik untuk menutup
         self.stop()
 
